@@ -1,0 +1,20 @@
+linters:
+  fast: true
+  enable:
+    - gofmt
+    - bodyclose
+    - gosec
+    - interfacer
+    - unconvert
+    - dupl
+    - goconst
+    - gocyclo
+    - maligned
+    - depguard
+    - misspell
+    - lll
+    - unparam
+    - nakedret
+    - prealloc
+    - scopelint
+    - gocritic
