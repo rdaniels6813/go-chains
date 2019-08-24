@@ -1,12 +1,13 @@
 package chains
 
-import "github.com/rdaniels6813/go-chains/chains/os"
-
+// Keychain keychain interface which uses OS native keychain
 type Keychain interface {
-	Set(key string, value string) error
-	Get(key string) (string, error)
+	Set(service string, account string, password string) error
+	Get(service string, account string) (string, error)
+	Delete(service string, account string) error
 }
 
+// NewKeychain creates a new API for interacting with the OS's keychain
 func NewKeychain() (Keychain, error) {
-	return &os.OSKeychain{}, nil
+	return &OSKeychain{}, nil
 }

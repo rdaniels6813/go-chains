@@ -1,11 +1,6 @@
 binary_name=cli-manager
 golangci_lint_version=1.17.1
 
-build:
-	GOOS=darwin GOARCH=amd64 go build -o bin/$(binary_name)-darwin-amd64 chains/keychain.go
-	GOOS=windows GOARCH=amd64 go build -o bin/$(binary_name)-windows-amd64.exe chains/keychain.go
-	GOOS=linux GOARCH=amd64 go build -o bin/$(binary_name)-linux-amd64 chains/keychain.go
-
 test:
 	go test -coverprofile=coverage.txt -covermode=atomic ./...
 

@@ -106,3 +106,4 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/go,linux,macos,windows,visualstudiocode
 main
 bin/
+coverage.txt
