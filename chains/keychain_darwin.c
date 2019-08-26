@@ -1,9 +1,37 @@
+#include "keychain.h"
 #include <Security/Security.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <stdio.h>
 #include <string.h>
 
-int GetGenericPassword(char *service, char *account, char *out)
+char *mallocString(const char *message)
+{
+  char *errorPointer = (char *)malloc(sizeof(char) * (strlen(message) + 1));
+  sprintf(errorPointer, "%s", message);
+  return errorPointer;
+}
+
+char *errorStatusToString(OSStatus status)
+{
+  char *errorStr;
+  CFStringRef errorMessageString = SecCopyErrorMessageString(status, NULL);
+
+  const char *errorCStringPtr = CFStringGetCStringPtr(errorMessageString,
+                                                      kCFStringEncodingUTF8);
+  if (errorCStringPtr)
+  {
+    errorStr = mallocString(errorCStringPtr);
+  }
+  else
+  {
+    errorStr = mallocString("An unknown error occurred.");
+  }
+
+  CFRelease(errorMessageString);
+  return errorStr;
+}
+
+char *GetGenericPassword(char *service, char *account, int *resultCode)
 {
   void *data;
   UInt32 length;
@@ -13,18 +41,22 @@ int GetGenericPassword(char *service, char *account, char *out)
 
   if (status == errSecItemNotFound)
   {
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
   else if (status != errSecSuccess)
   {
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
-  sprintf(out, "%s", ((const char *)data));
+  char *password = malloc(sizeof(char) * length);
+  sprintf(password, "%s", ((const char *)data));
   SecKeychainItemFreeContent(NULL, data);
-  return length;
+  *resultCode = length;
+  return password;
 }
 
-int AddGenericPassword(char *service, char *account, char *password)
+char *AddGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
   OSStatus status = SecKeychainAddGenericPassword(
       NULL, strlen(service), service, strlen(account), account,
@@ -32,17 +64,20 @@ int AddGenericPassword(char *service, char *account, char *password)
 
   if (status == errSecDuplicateItem)
   {
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
   else if (status != errSecSuccess)
   {
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
 
-  return errSecSuccess;
+  *resultCode = errSecSuccess;
+  return NULL;
 }
 
-int DeleteGenericPassword(char *service, char *account)
+char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 {
   SecKeychainItemRef item;
   OSStatus status = SecKeychainFindGenericPassword(NULL, strlen(service),
@@ -51,39 +86,46 @@ int DeleteGenericPassword(char *service, char *account)
   if (status == errSecItemNotFound)
   {
     // Item could not be found, so already deleted.
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
   else if (status != errSecSuccess)
   {
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
 
   status = SecKeychainItemDelete(item);
   CFRelease(item);
   if (status != errSecSuccess)
   {
-    return status;
+    *resultCode = status;
+    return errorStatusToString(status);
   }
 
-  return errSecSuccess;
+  *resultCode = errSecSuccess;
+  return NULL;
 }
 
-int AddOrUpdateGenericPassword(char *service, char *account, char *password)
+char *AddOrUpdateGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
-  OSStatus result = AddGenericPassword(service, account, password);
-  if (result == errSecDuplicateItem)
+  char *result = AddGenericPassword(service, account, password, resultCode);
+  if (*resultCode == errSecDuplicateItem)
   {
     // This password already exists, delete it and try again.
-    OSStatus delResult = DeleteGenericPassword(service, account);
-    if (delResult != errSecSuccess)
+    char *delResult = DeleteGenericPassword(service, account, resultCode);
+    if (*resultCode != errSecSuccess)
+    {
       return delResult;
+    }
     else
-      return AddGenericPassword(service, account, password);
+      return AddGenericPassword(service, account, password, resultCode);
   }
-  else if (result != errSecSuccess)
+  else if (*resultCode != errSecSuccess)
   {
     return result;
   }
 
-  return errSecSuccess;
+  *resultCode = errSecSuccess;
+  return NULL;
 }

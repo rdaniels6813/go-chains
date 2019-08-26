@@ -5,7 +5,7 @@ package chains
 // #cgo LDFLAGS: -framework Security -framework CoreFoundation
 // #cgo CFLAGS: -g -Wall
 // #include <stdlib.h>
-// #include "keychain_darwin.h"
+// #include "keychain.h"
 import "C"
 import "fmt"
 import "unsafe"
@@ -20,13 +20,18 @@ func (k *OSKeychain) Get(service string, account string) (string, error) {
 	name2 := C.CString(account)
 	defer C.free(unsafe.Pointer(name2))
 
-	ptr := C.malloc(C.sizeof_char * 1)
-	defer C.free(ptr)
+	passwordPointer := C.malloc(C.sizeof_char * 1)
+	defer C.free(passwordPointer)
 
-	size := C.GetGenericPassword(name, name2, (*C.char)(ptr))
+	var sizePointer C.int
 
-	b := C.GoBytes(ptr, size)
-	result := string(b)
+	passwordOrErrorMessage := C.GetGenericPassword(name, name2, &sizePointer)
+	defer C.free(unsafe.Pointer(passwordOrErrorMessage))
+	
+	result := C.GoString(passwordOrErrorMessage)
+	if sizePointer <= 0 {
+		return "", fmt.Errorf("Failed to get password: %s", result)
+	}
 	return result, nil
 }
 
@@ -40,9 +45,13 @@ func (k *OSKeychain) Set(service string, account string, password string) error 
 	cPassword := C.CString(password)
 	defer C.free(unsafe.Pointer(cPassword))
 
-	result := C.AddOrUpdateGenericPassword(cService, cAccount, cPassword)
-	if result != 0 {
-		return fmt.Errorf("An error setting the password occurred: %d", result)
+	var sizePointer C.int
+
+	errorMessage := C.AddOrUpdateGenericPassword(cService, cAccount, cPassword, &sizePointer)
+	defer C.free(unsafe.Pointer(errorMessage))
+	if sizePointer != 0 {
+		result := C.GoString(errorMessage)
+		return fmt.Errorf("An error setting the password occurred: %s", result)
 	}
 	return nil
 }
@@ -53,9 +62,13 @@ func (k *OSKeychain) Delete(service string, account string) error {
 	cAccount := C.CString(account)
 	defer C.free(unsafe.Pointer(cAccount))
 
-	result := C.DeleteGenericPassword(cService, cAccount)
-	if result != 0 {
-		return fmt.Errorf("An error deleting the password occurred: %d", result)
+	var sizePointer C.int
+
+	errorMessage := C.DeleteGenericPassword(cService, cAccount, &sizePointer)
+	defer C.free(unsafe.Pointer(errorMessage))
+	if sizePointer != 0 {
+		result := C.GoString(errorMessage)
+		return fmt.Errorf("An error deleting the password occurred: %s", result)
 	}
 	return nil
 }

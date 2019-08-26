@@ -8,4 +8,13 @@
       "source.organizeImports": true
     }
   },
+  "files.associations": {
+    "keychain.h": "c",
+    "initializer_list": "c",
+    "type_traits": "c",
+    "vector": "c",
+    "xstring": "c",
+    "xutility": "c",
+    "iosfwd": "c"
+  }
 }

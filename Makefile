@@ -1,6 +1,9 @@
 binary_name=cli-manager
 golangci_lint_version=1.17.1
 
+build:
+	go build ./chains/
+
 test:
 	go test -coverprofile=coverage.txt -covermode=atomic ./...
 
