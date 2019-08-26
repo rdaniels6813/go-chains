@@ -1,6 +1,7 @@
 
 #define UNICODE
 
+#include "keychain.h"
 #include <windows.h>
 #include <wincred.h>
 #include <stdio.h>
@@ -34,82 +35,182 @@ LPWSTR utf8ToWideChar(char *utf8)
   return result;
 }
 
-int GetGenericPassword(char *service, char *account, char *out)
+char *wideCharToAnsi(LPWSTR wide_char)
 {
-  char *target_name_c = (char *)malloc(sizeof(char) * (strlen(service) + strlen(account) + 1));
-  sprintf(target_name_c, "%s/%s", service, account);
-  LPWSTR target_name = utf8ToWideChar(target_name_c);
+  if (wide_char == NULL)
+  {
+    return "";
+  }
+
+  int ansi_length = WideCharToMultiByte(CP_ACP,
+                                        0,
+                                        wide_char,
+                                        -1,
+                                        NULL,
+                                        0,
+                                        NULL,
+                                        NULL);
+  if (ansi_length == 0)
+  {
+    return "";
+  }
+
+  char *buffer = malloc(sizeof(char) * ansi_length);
+  if (WideCharToMultiByte(CP_ACP,
+                          0,
+                          wide_char,
+                          -1,
+                          buffer,
+                          ansi_length,
+                          NULL,
+                          NULL) == 0)
+  {
+    free(buffer);
+    return "";
+  }
+
+  return buffer;
+}
+
+char *wideCharToUtf8(LPWSTR wide_char)
+{
+  if (wide_char == NULL)
+  {
+    return "";
+  }
+
+  int utf8_length = WideCharToMultiByte(CP_UTF8,
+                                        0,
+                                        wide_char,
+                                        -1,
+                                        NULL,
+                                        0,
+                                        NULL,
+                                        NULL);
+  if (utf8_length == 0)
+  {
+    return "";
+  }
+
+  char *buffer = malloc(sizeof(char) * utf8_length);
+  if (WideCharToMultiByte(CP_UTF8,
+                          0,
+                          wide_char,
+                          -1,
+                          buffer,
+                          utf8_length,
+                          NULL,
+                          NULL) == 0)
+  {
+    free(buffer);
+    return "";
+  }
+
+  return buffer;
+}
+
+char *getErrorMessage(DWORD errorCode)
+{
+  LPWSTR errBuffer;
+  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                NULL, errorCode, 0, (LPWSTR)&errBuffer, 0, NULL);
+  char *errMsg = wideCharToAnsi(errBuffer);
+  LocalFree(errBuffer);
+  return errMsg;
+}
+
+char *mallocString(char *message)
+{
+  char *errorPointer = (char *)malloc(sizeof(char) * (strlen(message) + 1));
+  sprintf(errorPointer, "%s", message);
+  return errorPointer;
+}
+
+char *GetGenericPassword(char *service, char *account, int *resultCode)
+{
+  char *target_name_utf8 = (char *)malloc(sizeof(char) * (strlen(service) + strlen(account) + 1));
+  sprintf(target_name_utf8, "%s/%s", service, account);
+  LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
   {
-    return -1;
+    *resultCode = -1;
+    return mallocString("Error converting service & account to target_name");
   }
 
   CREDENTIAL *cred;
   boolean result = CredRead(target_name, CRED_TYPE_GENERIC, 0, &cred);
   free(target_name);
-  free(target_name_c);
+  free(target_name_utf8);
   if (!result)
   {
     DWORD code = GetLastError();
     if (code == ERROR_NOT_FOUND)
     {
-      return -2;
+      *resultCode = code;
+      return getErrorMessage(code);
     }
     else
     {
-      return -3;
+      *resultCode = code;
+      return getErrorMessage(code);
     }
   }
-
-  sprintf(out, "%s", (char *)cred->CredentialBlob);
-  int length = cred->CredentialBlobSize;
+  char *password = malloc(sizeof(char) * cred->CredentialBlobSize);
+  sprintf(password, "%s", (char *)cred->CredentialBlob);
   CredFree(cred);
-  return length;
+  *resultCode = 0;
+  return password;
 }
 
-int DeleteGenericPassword(char *service, char *account)
+char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 {
-  char *target_name_c = (char *)malloc(strlen(service) + strlen(account) + 1);
-  sprintf(target_name_c, "%s/%s", service, account);
-  LPWSTR target_name = utf8ToWideChar(target_name_c);
-  if (target_name_c == NULL)
+  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 1);
+  sprintf(target_name_utf8, "%s/%s", service, account);
+  LPWSTR target_name = utf8ToWideChar(target_name_utf8);
+  if (target_name_utf8 == NULL)
   {
-    return -1;
+    *resultCode = -1;
+    return mallocString("Error converting service & account to target_name");
   }
 
   boolean result = CredDelete((LPWSTR)target_name, CRED_TYPE_GENERIC, 0);
   free(target_name);
-  free(target_name_c);
+  free(target_name_utf8);
   if (!result)
   {
     DWORD code = GetLastError();
     if (code == ERROR_NOT_FOUND)
     {
-      return code;
+      *resultCode = code;
+      return getErrorMessage(code);
     }
     else
     {
-      return code;
+      *resultCode = code;
+      return getErrorMessage(code);
     }
   }
 
-  return 0;
+  *resultCode = 0;
+  return NULL;
 }
 
-int AddOrUpdateGenericPassword(char *service, char *account, char *password)
+char *AddOrUpdateGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
-  char *target_name_c = (char *)malloc(sizeof(char) * (strlen(service) + strlen(account) + 1));
-  sprintf(target_name_c, "%s/%s", service, account);
-  LPWSTR target_name = utf8ToWideChar(target_name_c);
+  char *target_name_utf8 = (char *)malloc(sizeof(char) * (strlen(service) + strlen(account) + 1));
+  sprintf(target_name_utf8, "%s/%s", service, account);
+  LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
   {
-    return -1;
+    *resultCode = -1;
+    return mallocString("Error converting service & account to target_name");
   }
 
   LPWSTR user_name = utf8ToWideChar(account);
   if (user_name == NULL)
   {
-    return -1;
+    *resultCode = -1;
+    return mallocString("account must not be null");
   }
 
   CREDENTIAL cred = {0};
@@ -121,19 +222,19 @@ int AddOrUpdateGenericPassword(char *service, char *account, char *password)
   cred.Persist = CRED_PERSIST_ENTERPRISE;
 
   boolean result = CredWrite(&cred, 0);
-  free(target_name_c);
+  free(target_name_utf8);
   free(target_name);
   if (!result)
   {
-    return -2;
+    DWORD code = GetLastError();
+    *resultCode = code;
+    return getErrorMessage(code);
   }
-  else
-  {
-    return 0;
-  }
+  *resultCode = 0;
+  return NULL;
 }
 
-int AddGenericPassword(char *service, char *account, char *password)
+char *AddGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
-  return AddOrUpdateGenericPassword(service, account, password);
+  return AddOrUpdateGenericPassword(service, account, password, resultCode);
 }

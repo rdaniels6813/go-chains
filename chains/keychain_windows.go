@@ -4,7 +4,7 @@ package chains
 
 // #cgo CFLAGS: -g -Wall
 // #include <stdlib.h>
-// #include "keychain_windows.h"
+// #include "keychain.h"
 import "C"
 import "fmt"
 import "unsafe"
@@ -19,23 +19,14 @@ func (k *OSKeychain) Get(service string, account string) (string, error) {
 	name2 := C.CString(account)
 	defer C.free(unsafe.Pointer(name2))
 
-	ptr := C.malloc(C.sizeof_char * 1024)
-	defer C.free(ptr)
+	var resultCode C.int
 
-	size := C.GetGenericPassword(name, name2, (*C.char)(ptr))
-
-	if size <=0 {
-		switch size {
-		case -1:
-			return "", fmt.Errorf("Unknown error") 
-		case -2:			
-			return "", fmt.Errorf("Not found")
-		case -3:			
-			return "", fmt.Errorf("Unknown error")
-		}
+	passwordOrErrorMessage := C.GetGenericPassword(name, name2, &resultCode)
+	defer C.free(unsafe.Pointer(passwordOrErrorMessage))
+	result := C.GoString(passwordOrErrorMessage)
+	if resultCode != 0 {
+		return "", fmt.Errorf("Keychain Get error: %s", result)
 	}
-	b := C.GoBytes(ptr, size)
-	result := string(b)
 	return result, nil
 }
 
@@ -49,9 +40,12 @@ func (k *OSKeychain) Set(service string, account string, password string) error 
 	cPassword := C.CString(password)
 	defer C.free(unsafe.Pointer(cPassword))
 
-	result := C.AddOrUpdateGenericPassword(cService, cAccount, cPassword)
-	if result != 0 {
-		return fmt.Errorf("An error setting the password occurred: %d", result)
+	var resultCode C.int
+
+	resultMessage := C.AddOrUpdateGenericPassword(cService, cAccount, cPassword, &resultCode)
+	defer C.free(unsafe.Pointer(resultMessage))
+	if resultCode != 0 {
+		return fmt.Errorf("Keychain Set error: %s", C.GoString(resultMessage))
 	}
 	return nil
 }
@@ -62,9 +56,12 @@ func (k *OSKeychain) Delete(service string, account string) error {
 	cAccount := C.CString(account)
 	defer C.free(unsafe.Pointer(cAccount))
 
-	result := C.DeleteGenericPassword(cService, cAccount)
-	if result != 0 {
-		return fmt.Errorf("An error deleting the password occurred: %d", result)
+	var resultCode C.int
+
+	resultMessage := C.DeleteGenericPassword(cService, cAccount, &resultCode)
+	defer C.free(unsafe.Pointer(resultMessage))
+	if resultCode != 0 {
+		return fmt.Errorf("Keychain Delete error: %s", C.GoString(resultMessage))
 	}
 	return nil
 }
