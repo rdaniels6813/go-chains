@@ -9,7 +9,7 @@ static const SecretSchema schema = {
 
 char *mallocString(const char *message)
 {
-  char *errorPointer = (char *)malloc(sizeof(char) * (strlen(message) + 1));
+  char *errorPointer = (char *)malloc(strlen(message) + 1);
   sprintf(errorPointer, "%s", message);
   return errorPointer;
 }

@@ -121,14 +121,14 @@ char *getErrorMessage(DWORD errorCode)
 
 char *mallocString(char *message)
 {
-  char *errorPointer = (char *)malloc(sizeof(char) * (strlen(message) + 1));
+  char *errorPointer = (char *)malloc(strlen(message) + 1);
   sprintf(errorPointer, "%s", message);
   return errorPointer;
 }
 
 char *GetGenericPassword(char *service, char *account, int *resultCode)
 {
-  char *target_name_utf8 = (char *)malloc(sizeof(char) * (strlen(service) + strlen(account) + 1));
+  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2);
   sprintf(target_name_utf8, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
@@ -164,7 +164,7 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
 
 char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 {
-  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 1);
+  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2);
   sprintf(target_name_utf8, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name_utf8 == NULL)
@@ -197,7 +197,7 @@ char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 
 char *AddOrUpdateGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
-  char *target_name_utf8 = (char *)malloc(sizeof(char) * (strlen(service) + strlen(account) + 1));
+  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2));
   sprintf(target_name_utf8, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
@@ -217,7 +217,7 @@ char *AddOrUpdateGenericPassword(char *service, char *account, char *password, i
   cred.Type = CRED_TYPE_GENERIC;
   cred.TargetName = target_name;
   cred.UserName = user_name;
-  cred.CredentialBlobSize = strlen(password);
+  cred.CredentialBlobSize = strlen(password) + 1;
   cred.CredentialBlob = (LPBYTE)password;
   cred.Persist = CRED_PERSIST_ENTERPRISE;
 
