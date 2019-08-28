@@ -1,0 +1,30 @@
+version: "{build}"
+
+image: Visual Studio 2017
+platform:
+  - x64
+
+environment:
+  GOPATH: c:\gopath
+  GOVERSION: 1.12.9
+
+branches:
+  only:
+    - /master|^v\d+\.\d+\.\d+$/
+
+clone_depth: 10
+
+install:
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - rmdir c:\go /s /q
+  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
+  - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
+  - go version
+  - go env
+  - mkdir c:\gopath
+
+build_script:
+  - go test ./...
+
+test: off
+deploy: off
