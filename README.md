@@ -1,4 +1,5 @@
 # go-chains
+[![Build Status](https://travis-ci.org/rdaniels6813/go-chains.svg?branch=master)](https://travis-ci.org/rdaniels6813/go-chains)
 
 ## Install
 
