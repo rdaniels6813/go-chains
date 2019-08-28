@@ -10,10 +10,6 @@ branches:
 
 clone_depth: 10
 
-install:
-  - go get golang.org/dl/go1.12.9
-  - go1.12.9 download
-
 
 build_script:
   - go1.12.9 test ./...
