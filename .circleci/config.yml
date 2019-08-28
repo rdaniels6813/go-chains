@@ -1,4 +1,4 @@
-version: 2.2
+version: 2
 
 orbs:
   win: circleci/windows@1.0.0
@@ -21,6 +21,7 @@ jobs:
       - run:
           name: codecov
           command: bash <(curl -s https://codecov.io/bash)
+
   build-windows:
     executor:
       name: win/vs2019
