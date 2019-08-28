@@ -10,6 +10,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: install libsecret
+          command: apt-get update && apt-get install -y libsecret-1-dev
+      - run:
           name: go lint
           command: make lint
       - run:
