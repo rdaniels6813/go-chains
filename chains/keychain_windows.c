@@ -197,7 +197,7 @@ char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 
 char *AddOrUpdateGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
-  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2));
+  char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2);
   sprintf(target_name_utf8, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
