@@ -30,14 +30,6 @@ jobs:
       - run:
           name: go test
           command: go test -coverprofile=coverage.txt -covermode=atomic ./...
-  build-macos:
-    macos:
-      xcode: '10.0'
-    steps:
-      - checkout
-      - run:
-          name: go test
-          command: go test -coverprofile=coverage.txt -covermode=atomic ./...
 
   release:
     docker:
@@ -59,7 +51,6 @@ workflows:
           requires:
             - 'build-linux'
             - 'build-windows'
-            - 'build-macos'
           filters:
             branches:
               only: master
