@@ -12,7 +12,7 @@ clone_depth: 10
 
 
 build_script:
-  - set PATH=c:\MinGW\bin;%PATH%
+  - set PATH=C:\msys64\mingw64\bin;%PATH%
   - go test ./...
 
 test: off
