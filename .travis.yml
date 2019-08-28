@@ -34,5 +34,5 @@ before_script:
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then chmod +x ./script/cibuild && xvfb-run ./script/cibuild; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then go test ./...; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then go test ./...; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make build && make test; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then make build && make test; fi
