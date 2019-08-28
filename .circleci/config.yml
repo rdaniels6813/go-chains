@@ -1,0 +1,63 @@
+version: 2.2
+
+orbs:
+  win: circleci/windows@1.0.0
+
+jobs:
+  build-linux:
+    docker:
+      - image: golang:1.12
+    steps:
+      - checkout
+      - run:
+          name: go lint
+          command: make lint
+      - run:
+          name: go test
+          command: make test
+      - run:
+          name: go build
+          command: make build
+      - run:
+          name: codecov
+          command: bash <(curl -s https://codecov.io/bash)
+  build-windows:
+    executor:
+      name: win/vs2019
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: go test
+          command: go test -coverprofile=coverage.txt -covermode=atomic ./...
+  build-macos:
+    macos:
+      xcode: '10.0'
+    steps:
+      - checkout
+      - run:
+          name: go test
+          command: go test -coverprofile=coverage.txt -covermode=atomic ./...
+
+  release:
+    docker:
+      - image: rdaniels6813/semantic-release-alpine:latest
+    steps:
+      - checkout
+      - run:
+          name: Release
+          command: make release
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - 'build-linux'
+      - 'build-windows'
+      - 'build-macos'
+      - release:
+          requires:
+            - 'build'
+          filters:
+            branches:
+              only: master
