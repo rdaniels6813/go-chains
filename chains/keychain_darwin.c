@@ -6,7 +6,7 @@
 
 char *mallocString(const char *message)
 {
-  char *errorPointer = (char *)malloc(sizeof(char) * (strlen(message) + 1));
+  char *errorPointer = (char *)malloc(strlen(message) + 1);
   sprintf(errorPointer, "%s", message);
   return errorPointer;
 }
@@ -36,7 +36,7 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
   void *data;
   UInt32 length;
   OSStatus status = SecKeychainFindGenericPassword(
-      NULL, strlen(service), service, strlen(account), account, &length, &data,
+      NULL, strlen(service) + 1, service, strlen(account) + 1, account, &length, &data,
       NULL);
 
   if (status == errSecItemNotFound)
@@ -49,7 +49,7 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
     *resultCode = status;
     return errorStatusToString(status);
   }
-  char *password = malloc(sizeof(char) * length);
+  char *password = malloc(length * 2 + 1);
   sprintf(password, "%s", ((const char *)data));
   SecKeychainItemFreeContent(NULL, data);
   *resultCode = length;
@@ -59,8 +59,8 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
 char *AddGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
   OSStatus status = SecKeychainAddGenericPassword(
-      NULL, strlen(service), service, strlen(account), account,
-      strlen(password), password, NULL);
+      NULL, strlen(service) + 1, service, strlen(account) + 1, account,
+      strlen(password) + 1, password, NULL);
 
   if (status == errSecDuplicateItem)
   {
@@ -80,8 +80,8 @@ char *AddGenericPassword(char *service, char *account, char *password, int *resu
 char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 {
   SecKeychainItemRef item;
-  OSStatus status = SecKeychainFindGenericPassword(NULL, strlen(service),
-                                                   service, strlen(account),
+  OSStatus status = SecKeychainFindGenericPassword(NULL, strlen(service) + 1,
+                                                   service, strlen(account) + 1,
                                                    account, NULL, NULL, &item);
   if (status == errSecItemNotFound)
   {
