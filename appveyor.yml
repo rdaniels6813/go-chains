@@ -12,7 +12,7 @@ clone_depth: 10
 
 
 build_script:
-  - go1.12.9 test ./...
+  - go test ./...
 
 test: off
 deploy: off
