@@ -57,7 +57,9 @@ workflows:
       - 'build-macos'
       - release:
           requires:
-            - 'build'
+            - 'build-linux'
+            - 'build-windows'
+            - 'build-macos'
           filters:
             branches:
               only: master
