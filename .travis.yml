@@ -1,0 +1,38 @@
+language: go
+sudo: required
+
+os:
+  - linux
+  - osx
+  - windows
+go: 1.12
+
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
+services:
+  - docker
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - xvfb
+      - gnome-keyring
+      - libsecret-1-dev
+      - python-gnomekeyring
+
+before_script:
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      dbus-launch /usr/bin/python -c \
+        "import gnomekeyring;gnomekeyring.create_sync('login', '');"
+    fi
+
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./script/cibuild; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then go test; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then go test; fi
