@@ -32,5 +32,13 @@ before_script:
     fi
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then chmod +x ./script/cibuild && xvfb-run ./script/cibuild; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then env GO111MODULE=on go test ./...; fi
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+      chmod +x ./script/cibuild
+      xvfb-run ./script/cibuild
+      bash <(curl -s https://codecov.io/bash)
+    fi
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+      env GO111MODULE=on go test ./...
+    fi

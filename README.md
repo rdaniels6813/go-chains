@@ -1,6 +1,7 @@
 # go-chains
 [![Build Status](https://travis-ci.org/rdaniels6813/go-chains.svg?branch=master)](https://travis-ci.org/rdaniels6813/go-chains)
 [![Appveyor](https://ci.appveyor.com/api/projects/status/github/rdaniels6813/go-chains?svg=true)](https://ci.appveyor.com/project/rdaniels6813/go-chains)
+[![codecov](https://codecov.io/gh/rdaniels6813/go-chains/branch/master/graph/badge.svg)](https://codecov.io/gh/rdaniels6813/go-chains)
 
 ## Install
 
