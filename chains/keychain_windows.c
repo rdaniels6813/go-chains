@@ -122,14 +122,14 @@ char *getErrorMessage(DWORD errorCode)
 char *mallocString(char *message)
 {
   char *errorPointer = (char *)malloc(strlen(message) + 1);
-  sprintf(errorPointer, "%s", message);
+  snprintf(errorPointer, strlen(message) + 1, "%s", message);
   return errorPointer;
 }
 
 char *GetGenericPassword(char *service, char *account, int *resultCode)
 {
   char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2);
-  sprintf(target_name_utf8, "%s/%s", service, account);
+  snprintf(target_name_utf8, strlen(service) + strlen(account) + 2, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
   {
@@ -156,7 +156,7 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
     }
   }
   char *password = malloc(sizeof(char) * cred->CredentialBlobSize);
-  sprintf(password, "%s", (char *)cred->CredentialBlob);
+  snprintf(password, sizeof(char) * cred->CredentialBlobSize, "%s", (char *)cred->CredentialBlob);
   CredFree(cred);
   *resultCode = 0;
   return password;
@@ -165,7 +165,7 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
 char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 {
   char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2);
-  sprintf(target_name_utf8, "%s/%s", service, account);
+  snprintf(target_name_utf8, strlen(service) + strlen(account) + 2, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name_utf8 == NULL)
   {
@@ -198,7 +198,7 @@ char *DeleteGenericPassword(char *service, char *account, int *resultCode)
 char *AddOrUpdateGenericPassword(char *service, char *account, char *password, int *resultCode)
 {
   char *target_name_utf8 = (char *)malloc(strlen(service) + strlen(account) + 2);
-  sprintf(target_name_utf8, "%s/%s", service, account);
+  snprintf(target_name_utf8, strlen(service) + strlen(account) + 2, "%s/%s", service, account);
   LPWSTR target_name = utf8ToWideChar(target_name_utf8);
   if (target_name == NULL)
   {

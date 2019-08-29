@@ -7,7 +7,7 @@
 char *mallocString(const char *message)
 {
   char *errorPointer = (char *)malloc(strlen(message) + 1);
-  sprintf(errorPointer, "%s", message);
+  snprintf(errorPointer, strlen(message) + 1, "%s", message);
   return errorPointer;
 }
 
@@ -50,7 +50,7 @@ char *GetGenericPassword(char *service, char *account, int *resultCode)
     return errorStatusToString(status);
   }
   char *password = malloc(length * 2 + 1);
-  sprintf(password, "%s", ((const char *)data));
+  snprintf(password, length + 1, "%s", ((const char *)data));
   SecKeychainItemFreeContent(NULL, data);
   *resultCode = length;
   return password;

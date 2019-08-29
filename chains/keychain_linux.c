@@ -10,7 +10,7 @@ static const SecretSchema schema = {
 char *mallocString(const char *message)
 {
   char *errorPointer = (char *)malloc(strlen(message) + 1);
-  sprintf(errorPointer, "%s", message);
+  snprintf(errorPointer, strlen(message) + 1, "%s", message);
   return errorPointer;
 }
 
@@ -85,7 +85,7 @@ char *AddOrUpdateGenericPassword(char *service, char *account, char *password, i
 
   char *label = malloc(strlen(service) + strlen(account) + 2);
 
-  sprintf(label, "%s/%s", service, account);
+  snprintf(label, strlen(service) + strlen(account) + 2, "%s/%s", service, account);
 
   secret_password_store_sync(
       &schema,
