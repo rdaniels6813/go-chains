@@ -1,4 +1,4 @@
-version: "{build}"
+version: '{build}'
 
 image: Visual Studio 2017
 platform:
@@ -10,12 +10,15 @@ branches:
 
 clone_depth: 10
 
-
-build_script:
+before_test:
   - set PATH=C:\msys64\mingw64\bin;%PATH%
   - choco install -y make codecov
+
+test_script:
   - make test
+
+after_test:
   - codecov
 
-test: off
+build: off
 deploy: off
