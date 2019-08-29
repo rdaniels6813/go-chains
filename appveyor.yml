@@ -13,11 +13,9 @@ clone_depth: 10
 
 build_script:
   - set PATH=C:\msys64\mingw64\bin;%PATH%
-  - choco install -y make
+  - choco install -y make codecov
   - make test
-
-after_build:
-  - bash <(curl -s https://codecov.io/bash)
+  - codecov
 
 test: off
 deploy: off
