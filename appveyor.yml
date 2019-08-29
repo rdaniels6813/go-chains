@@ -18,7 +18,7 @@ test_script:
   - make test
 
 after_test:
-  - codecov
+  - codecov -f coverage.txt
 
 build: off
 deploy: off
